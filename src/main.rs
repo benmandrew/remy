@@ -1,8 +1,10 @@
+mod render;
+
 use color_eyre::Result;
 use crossterm::event::{self, Event};
-use ratatui::prelude::*;
-use ratatui::widgets::{Block, BorderType, Borders, Paragraph};
-use ratatui::{DefaultTerminal, Frame};
+use ratatui::DefaultTerminal;
+
+use crate::render::render;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -19,27 +21,4 @@ fn run(mut terminal: DefaultTerminal) -> Result<()> {
             break Ok(());
         }
     }
-}
-
-fn render(frame: &mut Frame) {
-    let layout = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(frame.area());
-    frame.render_widget(
-        Paragraph::new("Left").block(
-            Block::new()
-                .border_type(BorderType::Rounded)
-                .borders(Borders::ALL),
-        ),
-        layout[0],
-    );
-    frame.render_widget(
-        Paragraph::new("Right").block(
-            Block::new()
-                .border_type(BorderType::Rounded)
-                .borders(Borders::ALL),
-        ),
-        layout[1],
-    );
 }
