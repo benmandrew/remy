@@ -35,7 +35,8 @@ fn fetch_feed(url: &str) -> Result<Feed, std::io::Error> {
         })?;
         transfer.perform()?;
     }
-    let contents =
-        String::from_utf8(feed_content).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e));
-    parser::parse(contents?.as_bytes()).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+    let contents = String::from_utf8(feed_content)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e));
+    parser::parse(contents?.as_bytes())
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }

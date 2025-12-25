@@ -7,7 +7,10 @@ use ratatui::DefaultTerminal;
 
 use crate::render::render;
 
-fn run(mut terminal: DefaultTerminal, state: &mut state::State) -> Result<(), std::io::Error> {
+fn run(
+    mut terminal: DefaultTerminal,
+    state: &mut state::State,
+) -> Result<(), std::io::Error> {
     loop {
         terminal.draw(|f| render(f, state))?;
         if let Event::Key(key) = event::read()? {
