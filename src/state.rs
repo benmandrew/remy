@@ -7,14 +7,14 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(feeds: Vec<&str>) -> Self {
+    pub fn new(feeds: Vec<String>) -> Self {
         let selected = 0;
         let mut list_state = ListState::default();
         list_state.select(Some(selected));
         State {
             selected,
             list_state,
-            feeds: feeds.iter().map(|s| s.to_string()).collect(),
+            feeds,
         }
     }
 

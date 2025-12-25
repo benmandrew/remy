@@ -1,23 +1,13 @@
+mod feed;
 mod render;
 mod state;
 
-use crate::state::State;
-use color_eyre::Result;
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::DefaultTerminal;
 
 use crate::render::render;
 
-fn main() -> Result<()> {
-    color_eyre::install()?;
-    let terminal = ratatui::init();
-    let mut state = State::new(vec!["Item 1", "Item 2", "Item 3", "Item 4"]);
-    let result = run(terminal, &mut state);
-    ratatui::restore();
-    result
-}
-
-fn run(mut terminal: DefaultTerminal, state: &mut state::State) -> Result<()> {
+fn run(mut terminal: DefaultTerminal, state: &mut state::State) -> Result<(), std::io::Error> {
     loop {
         terminal.draw(|f| render(f, state))?;
         if let Event::Key(key) = event::read()? {
@@ -28,4 +18,21 @@ fn run(mut terminal: DefaultTerminal, state: &mut state::State) -> Result<()> {
             }
         }
     }
+}
+
+fn get_state() -> Result<state::State, std::io::Error> {
+    match feed::get("feeds.txt") {
+        Ok(feeds) => Ok(state::State::new(feeds)),
+        Err(e) => Err(e),
+    }
+}
+
+fn main() -> Result<(), std::io::Error> {
+    let terminal = ratatui::init();
+    let result = match get_state() {
+        Ok(mut s) => run(terminal, &mut s),
+        Err(e) => Err(e),
+    };
+    ratatui::restore();
+    result
 }
