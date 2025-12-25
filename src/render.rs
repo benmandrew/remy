@@ -22,7 +22,12 @@ pub fn render(frame: &mut Frame, state: &mut State) {
         &state
             .feeds
             .iter()
-            .map(String::as_str)
+            .map(|feed| {
+                feed.title
+                    .as_ref()
+                    .map(|t| t.content.as_str())
+                    .unwrap_or("No Title")
+            })
             .collect::<Vec<&str>>(),
         &mut state.list_state,
     );

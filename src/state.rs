@@ -1,13 +1,14 @@
+use feed_rs::model::Feed;
 use ratatui::widgets::ListState;
 
 pub struct State {
     pub selected: usize,
     pub list_state: ListState,
-    pub feeds: Vec<String>,
+    pub feeds: Vec<Feed>,
 }
 
 impl State {
-    pub fn new(feeds: Vec<String>) -> Self {
+    pub fn new(feeds: Vec<Feed>) -> Self {
         let selected = 0;
         let mut list_state = ListState::default();
         list_state.select(Some(selected));
