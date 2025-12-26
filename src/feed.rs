@@ -52,10 +52,11 @@ async fn fetch_feed(url: String) -> Result<Feed, std::io::Error> {
 }
 
 const CACHE_PREFIX: &str = "com.benmandrew.remy";
+const CACHE_FILENAME: &str = "feed_cache.json";
 
 fn get_cache_path() -> Result<std::path::PathBuf, std::io::Error> {
     let xdg_dirs = xdg::BaseDirectories::with_prefix(CACHE_PREFIX);
-    xdg_dirs.find_cache_file("feed_cache.json").ok_or_else(|| {
+    xdg_dirs.find_cache_file(CACHE_FILENAME).ok_or_else(|| {
         io::Error::new(io::ErrorKind::NotFound, "cache not found")
     })
 }
@@ -74,7 +75,7 @@ pub async fn save_cached_feeds(
 ) -> Result<(), std::io::Error> {
     let xdg_dirs = xdg::BaseDirectories::with_prefix(CACHE_PREFIX);
     let cache_path = xdg_dirs
-        .place_cache_file("feed_cache.json")
+        .place_cache_file(CACHE_FILENAME)
         .map_err(io::Error::other)?;
     let cached: Vec<CachedFeed> = feeds
         .iter()

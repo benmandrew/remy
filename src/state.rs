@@ -56,18 +56,6 @@ impl State {
         self.list_state.select(Some(self.selected));
     }
 
-    pub fn get_entry_titles(&self) -> Vec<String> {
-        self.entries
-            .iter()
-            .map(|e| {
-                e.title
-                    .as_ref()
-                    .map(|t| t.content.clone())
-                    .unwrap_or_else(|| "No Title".to_string())
-            })
-            .collect()
-    }
-
     pub fn get_selected_entry_body(&self) -> &str {
         self.entries[self.selected]
             .content

@@ -15,16 +15,12 @@ fn run(
 ) -> Result<(), std::io::Error> {
     loop {
         terminal.draw(|f| render(f, state))?;
-
-        // Check for fresh feeds without blocking
         if let Ok((feeds, urls)) = feed_rx.try_recv() {
             state.update_feeds(feeds.clone());
-            // Spawn task to save cache without blocking UI
             tokio::spawn(async move {
                 let _ = feed::save_cached_feeds(&feeds, &urls).await;
             });
         }
-
         if event::poll(std::time::Duration::from_millis(100))?
             && let Event::Key(key) = event::read()?
         {
