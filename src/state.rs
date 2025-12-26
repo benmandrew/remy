@@ -32,4 +32,13 @@ impl State {
             self.list_state.select(Some(self.selected));
         }
     }
+
+    pub fn update_feeds(&mut self, feeds: Vec<Feed>) {
+        self.feeds = feeds;
+        // Reset selection if out of bounds
+        if self.selected >= self.feeds.len() {
+            self.selected = self.feeds.len().saturating_sub(1);
+            self.list_state.select(Some(self.selected));
+        }
+    }
 }
