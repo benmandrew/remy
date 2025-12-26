@@ -1,7 +1,8 @@
 use crate::state::State;
 use feed_rs::model::Entry;
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
+use scraper::Html;
 
 fn entry_to_list_item<'a>(entry: &'a Entry) -> ListItem<'a> {
     let content = entry
@@ -36,9 +37,22 @@ fn render_entry_list(frame: &mut Frame, area: Rect, state: &mut State) {
     frame.render_stateful_widget(list, area, &mut state.list_state);
 }
 
+fn document_to_text(document: &str) -> String {
+    let html = Html::parse_document(document);
+    let mut output = String::with_capacity(document.len());
+    for value in html.tree.values() {
+        if let scraper::node::Node::Text(text) = &value {
+            output.push_str(&text.text);
+        }
+    }
+    output
+}
+
 fn render_selected_entry(frame: &mut Frame, area: Rect, entry_body: &str) {
-    let paragraph =
-        Paragraph::new(entry_body).block(Block::new().borders(Borders::ALL));
+    let entry_body = document_to_text(entry_body);
+    let paragraph = Paragraph::new(entry_body)
+        .block(Block::new().borders(Borders::ALL))
+        .wrap(Wrap { trim: false });
     frame.render_widget(paragraph, area);
 }
 
