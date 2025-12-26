@@ -15,7 +15,7 @@ fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<Entry> {
             entries.push(entry.clone());
         }
     }
-    entries.sort_by(|a, b| b.published.cmp(&a.published));
+    entries.sort_by(|a, b| b.updated.cmp(&a.updated));
     entries
 }
 
@@ -49,11 +49,31 @@ impl State {
 
     pub fn update_feeds(&mut self, feeds: Vec<Feed>) {
         self.feeds = feeds;
-        // Reset selection if out of bounds
-        if self.selected >= self.feeds.len() {
-            self.selected = self.feeds.len().saturating_sub(1);
+        self.entries = entries_from_feeds(&self.feeds);
+        if self.selected >= self.entries.len() {
+            self.selected = self.entries.len().saturating_sub(1);
         }
         self.list_state.select(Some(self.selected));
+    }
+
+    pub fn get_entry_titles(&self) -> Vec<String> {
+        self.entries
+            .iter()
+            .map(|e| {
+                e.title
+                    .as_ref()
+                    .map(|t| t.content.clone())
+                    .unwrap_or_else(|| "No Title".to_string())
+            })
+            .collect()
+    }
+
+    pub fn get_selected_entry_body(&self) -> &str {
+        self.entries[self.selected]
+            .content
+            .as_ref()
+            .and_then(|c| c.body.as_deref())
+            .unwrap_or("No Content")
     }
 }
 

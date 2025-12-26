@@ -89,6 +89,5 @@ pub async fn save_cached_feeds(
     let temp_path = cache_path.with_extension("tmp");
     tokio::fs::write(&temp_path, json).await?;
     tokio::fs::rename(temp_path, cache_path).await?;
-
     Ok(())
 }
