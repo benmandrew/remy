@@ -1,8 +1,9 @@
 use crate::state::State;
+use feed_rs::model::Entry;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
 
-fn render_feeds_list(
+fn render_entry_list(
     frame: &mut Frame,
     area: Rect,
     items: &[&str],
@@ -16,6 +17,20 @@ fn render_feeds_list(
     frame.render_stateful_widget(list, area, state)
 }
 
+fn get_entry_body(entry: &Entry) -> &str {
+    entry
+        .content
+        .as_ref()
+        .and_then(|c| c.body.as_deref())
+        .unwrap_or("No Content")
+}
+
+fn render_selected_entry(frame: &mut Frame, area: Rect, entry: &Entry) {
+    let paragraph = Paragraph::new(get_entry_body(entry))
+        .block(Block::new().borders(Borders::ALL));
+    frame.render_widget(paragraph, area);
+}
+
 pub fn render(frame: &mut Frame, state: &mut State) {
     let layout = Layout::default()
         .direction(Direction::Horizontal)
@@ -24,14 +39,14 @@ pub fn render(frame: &mut Frame, state: &mut State) {
             Constraint::Percentage(50),
         ])
         .split(frame.area());
-    render_feeds_list(
+    render_entry_list(
         frame,
         layout[0],
         &state
-            .feeds
+            .entries
             .iter()
-            .map(|feed| {
-                feed.title
+            .map(|e| {
+                e.title
                     .as_ref()
                     .map(|t| t.content.as_str())
                     .unwrap_or("No Title")
@@ -39,8 +54,5 @@ pub fn render(frame: &mut Frame, state: &mut State) {
             .collect::<Vec<&str>>(),
         &mut state.list_state,
     );
-    frame.render_widget(
-        Paragraph::new("Right Side").block(Block::new().borders(Borders::ALL)),
-        layout[1],
-    )
+    render_selected_entry(frame, layout[1], &state.entries[state.selected]);
 }

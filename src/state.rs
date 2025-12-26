@@ -1,10 +1,22 @@
-use feed_rs::model::Feed;
+use feed_rs::model::{Entry, Feed};
 use ratatui::widgets::ListState;
 
 pub struct State {
     pub selected: usize,
     pub list_state: ListState,
     pub feeds: Vec<Feed>,
+    pub entries: Vec<Entry>,
+}
+
+fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<Entry> {
+    let mut entries = vec![];
+    for feed in feeds {
+        for entry in &feed.entries {
+            entries.push(entry.clone());
+        }
+    }
+    entries.sort_by(|a, b| b.published.cmp(&a.published));
+    entries
 }
 
 impl State {
@@ -12,15 +24,17 @@ impl State {
         let selected = 0;
         let mut list_state = ListState::default();
         list_state.select(Some(selected));
+        let entries = entries_from_feeds(&feeds);
         State {
             selected,
             list_state,
             feeds,
+            entries,
         }
     }
 
     pub fn move_down(&mut self) {
-        if self.selected < self.feeds.len().saturating_sub(1) {
+        if self.selected < self.entries.len().saturating_sub(1) {
             self.selected += 1;
             self.list_state.select(Some(self.selected));
         }
@@ -38,7 +52,15 @@ impl State {
         // Reset selection if out of bounds
         if self.selected >= self.feeds.len() {
             self.selected = self.feeds.len().saturating_sub(1);
-            self.list_state.select(Some(self.selected));
         }
+        self.list_state.select(Some(self.selected));
+    }
+}
+
+impl std::ops::Deref for State {
+    type Target = Vec<Entry>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.entries
     }
 }
