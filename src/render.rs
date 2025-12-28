@@ -1,27 +1,23 @@
-use crate::state::State;
-use feed_rs::model::Entry;
+use crate::state::{EntryWithAuthor, State};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use scraper::Html;
 
-fn entry_to_list_item<'a>(entry: &'a Entry) -> ListItem<'a> {
+fn entry_to_list_item<'a>(entry: &'a EntryWithAuthor) -> ListItem<'a> {
     let content = entry
+        .entry
         .title
         .as_ref()
         .map(|t| t.content.as_str())
         .unwrap_or("No Title");
-    let author = entry
-        .authors
-        .first()
-        .map(|a| a.name.as_str())
-        .unwrap_or("Unknown Author");
     let updated = entry
+        .entry
         .updated
         .map(|d| d.format("%d/%m/%Y").to_string())
         .unwrap_or_else(|| "Unknown Date".to_string());
     let mut display_text = Text::from(content);
     display_text.push_line(
-        Line::from(format!("{} - {}", author, updated))
+        Line::from(format!("{} - {}", entry.author, updated))
             .italic()
             .right_aligned(),
     );

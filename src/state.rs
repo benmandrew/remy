@@ -5,17 +5,40 @@ pub struct State {
     pub selected: usize,
     pub list_state: ListState,
     pub feeds: Vec<Feed>,
-    pub entries: Vec<Entry>,
+    pub entries: Vec<EntryWithAuthor>,
 }
 
-fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<Entry> {
+pub struct EntryWithAuthor {
+    pub entry: Entry,
+    pub author: String,
+}
+
+impl EntryWithAuthor {
+    pub fn new(entry: Entry, author: Option<String>) -> Self {
+        let author = if let Some(author) = entry.authors.first() {
+            author.name.clone()
+        } else if let Some(contributor) = entry.contributors.first() {
+            contributor.name.clone()
+        } else if let Some(author) = author {
+            author
+        } else {
+            "Unknown Author".to_string()
+        };
+        EntryWithAuthor { entry, author }
+    }
+}
+
+fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<EntryWithAuthor> {
     let mut entries = vec![];
     for feed in feeds {
         for entry in &feed.entries {
-            entries.push(entry.clone());
+            entries.push(EntryWithAuthor::new(
+                entry.clone(),
+                feed.authors.first().map(|a| a.name.clone()),
+            ));
         }
     }
-    entries.sort_by(|a, b| b.updated.cmp(&a.updated));
+    entries.sort_by(|a, b| b.entry.updated.cmp(&a.entry.updated));
     entries
 }
 
@@ -58,6 +81,7 @@ impl State {
 
     pub fn get_selected_entry_body(&self) -> &str {
         self.entries[self.selected]
+            .entry
             .content
             .as_ref()
             .and_then(|c| c.body.as_deref())
@@ -66,7 +90,7 @@ impl State {
 }
 
 impl std::ops::Deref for State {
-    type Target = Vec<Entry>;
+    type Target = Vec<EntryWithAuthor>;
 
     fn deref(&self) -> &Self::Target {
         &self.entries
