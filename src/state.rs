@@ -6,6 +6,7 @@ pub struct State {
     pub list_state: ListState,
     pub feeds: Vec<Feed>,
     pub entries: Vec<EntryWithAuthor>,
+    pub render_raw_html: bool,
 }
 
 pub struct EntryWithAuthor {
@@ -53,6 +54,7 @@ impl State {
             list_state,
             feeds,
             entries,
+            render_raw_html: false,
         }
     }
 
@@ -86,6 +88,10 @@ impl State {
             .as_ref()
             .and_then(|c| c.body.as_deref())
             .unwrap_or("No Content")
+    }
+
+    pub fn switch_render_mode(&mut self) {
+        self.render_raw_html = !self.render_raw_html;
     }
 }
 
