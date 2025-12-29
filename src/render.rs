@@ -1,4 +1,4 @@
-use crate::state::{EntryWithAuthor, State};
+use crate::state::{EntryWithAuthor, SelectedWindow, State};
 use ratatui::prelude::*;
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
@@ -28,8 +28,12 @@ fn entry_to_list_item<'a>(entry: &'a EntryWithAuthor) -> ListItem<'a> {
 fn render_entry_list(frame: &mut Frame, area: Rect, state: &mut State) {
     let list_items: Vec<ListItem> =
         state.entries.iter().map(entry_to_list_item).collect();
+    let mut block = Block::new().borders(Borders::ALL);
+    if state.selected_window == SelectedWindow::EntryList {
+        block = block.border_style(Style::new().blue());
+    }
     let list = List::new(list_items)
-        .block(Block::new().borders(Borders::ALL))
+        .block(block)
         .highlight_style(Style::new().reversed());
     frame.render_stateful_widget(list, area, &mut state.list_state);
 }
@@ -299,10 +303,19 @@ fn document_to_text(document: &str) -> Vec<Line<'static>> {
         .collect()
 }
 
-fn render_selected_entry(frame: &mut Frame, area: Rect, entry_body: &str) {
+fn render_selected_entry(
+    frame: &mut Frame,
+    area: Rect,
+    entry_body: &str,
+    selected_window: SelectedWindow,
+) {
+    let mut block = Block::new().borders(Borders::ALL);
+    if selected_window == SelectedWindow::EntryContent {
+        block = block.border_style(Style::new().blue());
+    }
     let lines = document_to_text(entry_body);
     let paragraph = Paragraph::new(lines)
-        .block(Block::new().borders(Borders::ALL))
+        .block(block)
         .wrap(Wrap { trim: false });
     frame.render_widget(paragraph, area);
 }
@@ -334,6 +347,7 @@ pub fn render(frame: &mut Frame, state: &mut State) {
             frame,
             layout[1],
             state.get_selected_entry_body(),
+            state.selected_window.clone(),
         );
     }
 }

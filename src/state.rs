@@ -1,12 +1,19 @@
 use feed_rs::model::{Entry, Feed};
 use ratatui::widgets::ListState;
 
+#[derive(Clone, PartialEq)]
+pub enum SelectedWindow {
+    EntryList,
+    EntryContent,
+}
+
 pub struct State {
     pub selected: usize,
     pub list_state: ListState,
     pub feeds: Vec<Feed>,
     pub entries: Vec<EntryWithAuthor>,
     pub render_raw_html: bool,
+    pub selected_window: SelectedWindow,
 }
 
 pub struct EntryWithAuthor {
@@ -55,21 +62,40 @@ impl State {
             feeds,
             entries,
             render_raw_html: false,
+            selected_window: SelectedWindow::EntryList,
         }
     }
 
     pub fn move_down(&mut self) {
-        if self.selected < self.entries.len().saturating_sub(1) {
-            self.selected += 1;
-            self.list_state.select(Some(self.selected));
+        match self.selected_window {
+            SelectedWindow::EntryList => {
+                if self.selected < self.entries.len().saturating_sub(1) {
+                    self.selected += 1;
+                    self.list_state.select(Some(self.selected));
+                }
+            }
+            SelectedWindow::EntryContent => {}
         }
     }
 
     pub fn move_up(&mut self) {
-        if self.selected > 0 {
-            self.selected -= 1;
-            self.list_state.select(Some(self.selected));
+        match self.selected_window {
+            SelectedWindow::EntryList => {
+                if self.selected > 0 {
+                    self.selected -= 1;
+                    self.list_state.select(Some(self.selected));
+                }
+            }
+            SelectedWindow::EntryContent => {}
         }
+    }
+
+    pub fn move_left(&mut self) {
+        self.selected_window = SelectedWindow::EntryList;
+    }
+
+    pub fn move_right(&mut self) {
+        self.selected_window = SelectedWindow::EntryContent;
     }
 
     pub fn update_feeds(&mut self, feeds: Vec<Feed>) {

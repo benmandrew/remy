@@ -27,6 +27,8 @@ fn run(
             match key.code {
                 KeyCode::Down => state.move_down(),
                 KeyCode::Up => state.move_up(),
+                KeyCode::Left => state.move_left(),
+                KeyCode::Right => state.move_right(),
                 KeyCode::Char('r') => state.switch_render_mode(),
                 _ => break Ok(()),
             }
