@@ -308,6 +308,7 @@ fn render_selected_entry(
     area: Rect,
     entry_body: &str,
     selected_window: SelectedWindow,
+    scroll_offset: u16,
 ) {
     let mut block = Block::new().borders(Borders::ALL);
     if selected_window == SelectedWindow::EntryContent {
@@ -315,6 +316,7 @@ fn render_selected_entry(
     }
     let lines = document_to_text(entry_body);
     let paragraph = Paragraph::new(lines)
+        .scroll((scroll_offset, 0))
         .block(block)
         .wrap(Wrap { trim: false });
     frame.render_widget(paragraph, area);
@@ -348,6 +350,7 @@ pub fn render(frame: &mut Frame, state: &mut State) {
             layout[1],
             state.get_selected_entry_body(),
             state.selected_window.clone(),
+            state.entry_scroll_offset,
         );
     }
 }
