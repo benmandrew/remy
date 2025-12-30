@@ -4,6 +4,7 @@ use ratatui::prelude::*;
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use scraper::Html;
+use std::rc::Rc;
 
 fn entry_to_list_item<'a>(entry: &'a EntryWithAuthor) -> ListItem<'a> {
     let content = entry
@@ -355,7 +356,7 @@ fn get_help_text() -> Vec<Line<'static>> {
         Line::from(vec![
             Span::raw("• "),
             Span::styled("Enter", Style::new().bold()),
-            Span::raw(" to open link"),
+            Span::raw(" to open article in browser"),
         ]),
         Line::from(vec![
             Span::raw("• "),
@@ -370,7 +371,7 @@ fn get_help_text() -> Vec<Line<'static>> {
     ]
 }
 
-const HELP_POPUP_DIMS: (u16, u16) = (40, 10);
+const HELP_POPUP_DIMS: (u16, u16) = (37, 7);
 
 fn render_help_popup(frame: &mut Frame) {
     let area = Rect {
@@ -387,14 +388,20 @@ fn render_help_popup(frame: &mut Frame) {
     popup.render(area, frame.buffer_mut());
 }
 
-pub fn render(frame: &mut Frame, state: &mut State) {
-    let layout = Layout::default()
+fn get_layout(frame: &mut Frame, state: &State) -> Rc<[Rect]> {
+    Layout::default()
         .direction(Direction::Horizontal)
         .constraints(vec![
-            Constraint::Percentage(50),
-            Constraint::Percentage(50),
+            Constraint::Percentage((state.separator.position * 100.0) as u16),
+            Constraint::Percentage(
+                ((1.0 - state.separator.position) * 100.0) as u16,
+            ),
         ])
-        .split(frame.area());
+        .split(frame.area())
+}
+
+pub fn render(frame: &mut Frame, state: &mut State) {
+    let layout = get_layout(frame, state);
     render_entry_list(frame, layout[0], state);
     if state.render_raw_html {
         render_selected_entry_raw(

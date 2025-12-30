@@ -16,40 +16,7 @@ pub struct State {
     pub render_raw_html: bool,
     pub selected_window: SelectedWindow,
     pub entry_scroll_offset: u16,
-}
-
-pub struct EntryWithAuthor {
-    pub entry: Entry,
-    pub author: String,
-}
-
-impl EntryWithAuthor {
-    pub fn new(entry: Entry, author: Option<String>) -> Self {
-        let author = if let Some(author) = entry.authors.first() {
-            author.name.clone()
-        } else if let Some(contributor) = entry.contributors.first() {
-            contributor.name.clone()
-        } else if let Some(author) = author {
-            author
-        } else {
-            "Unknown Author".to_string()
-        };
-        EntryWithAuthor { entry, author }
-    }
-}
-
-fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<EntryWithAuthor> {
-    let mut entries = vec![];
-    for feed in feeds {
-        for entry in &feed.entries {
-            entries.push(EntryWithAuthor::new(
-                entry.clone(),
-                feed.authors.first().map(|a| a.name.clone()),
-            ));
-        }
-    }
-    entries.sort_by(|a, b| b.entry.updated.cmp(&a.entry.updated));
-    entries
+    pub separator: Separator,
 }
 
 impl State {
@@ -66,6 +33,7 @@ impl State {
             render_raw_html: false,
             selected_window: SelectedWindow::EntryList,
             entry_scroll_offset: 0,
+            separator: Separator::new(),
         }
     }
 
@@ -150,7 +118,7 @@ impl State {
             .map(|l| l.href.clone())
             && let Err(e) = open::that_detached(link)
         {
-            eprintln!("Failed to open link: {}", e);
+            log::error!("Failed to open link: {}", e);
         }
     }
 }
@@ -160,5 +128,65 @@ impl std::ops::Deref for State {
 
     fn deref(&self) -> &Self::Target {
         &self.entries
+    }
+}
+
+pub struct EntryWithAuthor {
+    pub entry: Entry,
+    pub author: String,
+}
+
+impl EntryWithAuthor {
+    pub fn new(entry: Entry, author: Option<String>) -> Self {
+        let author = if let Some(author) = entry.authors.first() {
+            author.name.clone()
+        } else if let Some(contributor) = entry.contributors.first() {
+            contributor.name.clone()
+        } else if let Some(author) = author {
+            author
+        } else {
+            "Unknown Author".to_string()
+        };
+        EntryWithAuthor { entry, author }
+    }
+}
+
+fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<EntryWithAuthor> {
+    let mut entries = vec![];
+    for feed in feeds {
+        for entry in &feed.entries {
+            entries.push(EntryWithAuthor::new(
+                entry.clone(),
+                feed.authors.first().map(|a| a.name.clone()),
+            ));
+        }
+    }
+    entries.sort_by(|a, b| b.entry.updated.cmp(&a.entry.updated));
+    entries
+}
+
+pub struct Separator {
+    pub mouse_down: bool,
+    pub position: f32, // position as a fraction of total width
+}
+
+impl Separator {
+    pub fn new() -> Self {
+        Separator {
+            mouse_down: false,
+            position: 0.5,
+        }
+    }
+
+    pub fn mouse_on_separator(&self, mouse_x: u16, total_width: u16) -> bool {
+        let separator_x = (self.position * total_width as f32) as u16;
+        mouse_x.saturating_add(2) >= separator_x
+            && mouse_x.saturating_sub(1) <= separator_x
+    }
+
+    pub fn update_position(&mut self, mouse_x: u16, total_width: u16) {
+        self.position = mouse_x as f32 / total_width as f32;
+        let limit = 40.0 / total_width as f32;
+        self.position = self.position.clamp(limit, 1.0 - limit);
     }
 }
