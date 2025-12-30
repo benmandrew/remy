@@ -1,4 +1,5 @@
 mod feed;
+mod popup;
 mod render;
 mod state;
 
@@ -31,11 +32,24 @@ fn run(
                 KeyCode::Right => state.move_right(),
                 KeyCode::Enter => state.open_selected_entry_link(),
                 KeyCode::Char('r') => state.switch_render_mode(),
-                _ => break Ok(()),
+                KeyCode::Char('h') => match state.selected_window {
+                    state::SelectedWindow::HelpPopup => {
+                        state.selected_window =
+                            state::SelectedWindow::EntryList;
+                    }
+                    _ => {
+                        state.selected_window =
+                            state::SelectedWindow::HelpPopup;
+                    }
+                },
+                KeyCode::Char('q') => break Ok(()),
+                _ => {}
             }
         }
     }
 }
+
+const FEED_PATH: &str = "feeds.txt";
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -44,7 +58,7 @@ async fn main() -> Result<(), std::io::Error> {
     let mut state = state::State::new(initial_feeds);
     let feed_tx_clone = feed_tx.clone();
     tokio::spawn(async move {
-        if let Ok((feeds, urls)) = feed::get("feeds.txt").await {
+        if let Ok((feeds, urls)) = feed::get(FEED_PATH).await {
             let _ = feed_tx_clone.send((feeds, urls)).await;
         }
     });

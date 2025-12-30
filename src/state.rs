@@ -5,6 +5,7 @@ use ratatui::widgets::ListState;
 pub enum SelectedWindow {
     EntryList,
     EntryContent,
+    HelpPopup,
 }
 
 pub struct State {
@@ -80,6 +81,7 @@ impl State {
             SelectedWindow::EntryContent => {
                 self.entry_scroll_offset += 1;
             }
+            SelectedWindow::HelpPopup => {}
         }
     }
 
@@ -96,15 +98,26 @@ impl State {
                 self.entry_scroll_offset =
                     self.entry_scroll_offset.saturating_sub(1);
             }
+            SelectedWindow::HelpPopup => {}
         }
     }
 
     pub fn move_left(&mut self) {
-        self.selected_window = SelectedWindow::EntryList;
+        match self.selected_window {
+            SelectedWindow::HelpPopup => {}
+            SelectedWindow::EntryContent | SelectedWindow::EntryList => {
+                self.selected_window = SelectedWindow::EntryList;
+            }
+        }
     }
 
     pub fn move_right(&mut self) {
-        self.selected_window = SelectedWindow::EntryContent;
+        match self.selected_window {
+            SelectedWindow::HelpPopup => {}
+            SelectedWindow::EntryContent | SelectedWindow::EntryList => {
+                self.selected_window = SelectedWindow::EntryContent;
+            }
+        }
     }
 
     pub fn update_feeds(&mut self, feeds: Vec<Feed>) {

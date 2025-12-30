@@ -1,3 +1,4 @@
+use crate::popup::Popup;
 use crate::state::{EntryWithAuthor, SelectedWindow, State};
 use ratatui::prelude::*;
 use ratatui::text::{Line, Span, Text};
@@ -25,10 +26,20 @@ fn entry_to_list_item<'a>(entry: &'a EntryWithAuthor) -> ListItem<'a> {
     ListItem::new(display_text)
 }
 
+fn get_help_line() -> Line<'static> {
+    Line::from(vec![
+        Span::raw(" Press "),
+        Span::styled("h", Style::new().bold()),
+        Span::raw(" for controls "),
+    ])
+}
+
 fn render_entry_list(frame: &mut Frame, area: Rect, state: &mut State) {
     let list_items: Vec<ListItem> =
         state.entries.iter().map(entry_to_list_item).collect();
-    let mut block = Block::new().borders(Borders::ALL);
+    let mut block = Block::new()
+        .borders(Borders::ALL)
+        .title_bottom(get_help_line().centered());
     if state.selected_window == SelectedWindow::EntryList {
         block = block.border_style(Style::new().blue());
     }
@@ -329,6 +340,53 @@ fn render_selected_entry_raw(frame: &mut Frame, area: Rect, entry_body: &str) {
     frame.render_widget(paragraph, area);
 }
 
+fn get_help_text() -> Vec<Line<'static>> {
+    vec![
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled("Up/Down", Style::new().bold()),
+            Span::raw(" to navigate"),
+        ]),
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled("Left/Right", Style::new().bold()),
+            Span::raw(" to switch panes"),
+        ]),
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled("Enter", Style::new().bold()),
+            Span::raw(" to open link"),
+        ]),
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled("r", Style::new().bold()),
+            Span::raw(" to toggle raw/html view"),
+        ]),
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled("q", Style::new().bold()),
+            Span::raw(" to quit"),
+        ]),
+    ]
+}
+
+const HELP_POPUP_DIMS: (u16, u16) = (40, 10);
+
+fn render_help_popup(frame: &mut Frame) {
+    let area = Rect {
+        x: frame.area().width / 2 - HELP_POPUP_DIMS.0 / 2,
+        y: frame.area().height / 2 - HELP_POPUP_DIMS.1 / 2,
+        width: HELP_POPUP_DIMS.0,
+        height: HELP_POPUP_DIMS.1,
+    };
+    let popup = Popup::default()
+        .title("Controls")
+        .content(get_help_text())
+        .border_style(Style::new().blue())
+        .title_style(Style::new().bold().blue());
+    popup.render(area, frame.buffer_mut());
+}
+
 pub fn render(frame: &mut Frame, state: &mut State) {
     let layout = Layout::default()
         .direction(Direction::Horizontal)
@@ -352,5 +410,8 @@ pub fn render(frame: &mut Frame, state: &mut State) {
             state.selected_window.clone(),
             state.entry_scroll_offset,
         );
+    }
+    if state.selected_window == SelectedWindow::HelpPopup {
+        render_help_popup(frame);
     }
 }
