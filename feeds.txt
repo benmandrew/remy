@@ -2,3 +2,12 @@ https://benmandrew.com/feed.xml
 https://anil.recoil.org/news.xml
 https://xania.org/feed
 https://registerspill.thorstenball.com/feed
+https://www.adriancourreges.com/atom.xml
+https://www.dra27.uk/feed.xml
+https://www.joelonsoftware.com/feed
+https://www.farside.org.uk/feed
+https://feeds.feedburner.com/martinkl
+https://mikemcquaid.com/all.xml
+https://patrick.sirref.org/posts/atom.xml
+https://www.ralfj.de/blog/feed.xml
+https://ryan.freumh.org/home.xml
