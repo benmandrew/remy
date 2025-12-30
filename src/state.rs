@@ -128,6 +128,18 @@ impl State {
     pub fn switch_render_mode(&mut self) {
         self.render_raw_html = !self.render_raw_html;
     }
+
+    pub fn open_selected_entry_link(&self) {
+        if let Some(link) = self.entries[self.selected_entry]
+            .entry
+            .links
+            .first()
+            .map(|l| l.href.clone())
+            && let Err(e) = open::that_detached(link)
+        {
+            eprintln!("Failed to open link: {}", e);
+        }
+    }
 }
 
 impl std::ops::Deref for State {

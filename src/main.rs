@@ -29,6 +29,7 @@ fn run(
                 KeyCode::Up => state.move_up(),
                 KeyCode::Left => state.move_left(),
                 KeyCode::Right => state.move_right(),
+                KeyCode::Enter => state.open_selected_entry_link(),
                 KeyCode::Char('r') => state.switch_render_mode(),
                 _ => break Ok(()),
             }
