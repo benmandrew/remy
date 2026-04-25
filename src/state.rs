@@ -161,7 +161,7 @@ fn entries_from_feeds(feeds: &Vec<Feed>) -> Vec<EntryWithAuthor> {
             ));
         }
     }
-    entries.sort_by(|a, b| b.entry.updated.cmp(&a.entry.updated));
+    entries.sort_by_key(|e| std::cmp::Reverse(e.entry.updated));
     entries
 }
 

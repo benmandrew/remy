@@ -93,10 +93,8 @@ fn run(
         }
         if event::poll(std::time::Duration::from_millis(100))? {
             match event::read()? {
-                Event::Key(event) => {
-                    if handle_key_event(event, state) {
-                        break Ok(());
-                    }
+                Event::Key(event) if handle_key_event(event, state) => {
+                    break Ok(());
                 }
                 Event::Mouse(event) => {
                     handle_mouse_event(event, &terminal, state)?;
